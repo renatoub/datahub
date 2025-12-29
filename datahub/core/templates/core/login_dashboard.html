@@ -1,0 +1,9 @@
+<div style="max-width: 300px; margin: 100px auto; text-align: center; font-family: sans-serif;">
+    <h3>Acesso Restrito</h3>
+    <form method="post">
+        {% csrf_token %}
+        <input type="password" name="password" placeholder="Senha" required style="padding: 10px; width: 100%; margin-bottom: 10px;">
+        <button type="submit" style="padding: 10px 20px; cursor: pointer;">Entrar</button>
+    </form>
+    {% if error %}<p style="color: red;">{{ error }}</p>{% endif %}
+</div>

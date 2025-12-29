@@ -1,0 +1,61 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+{% block title %}Painel de Demandas — Admin{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h3">Painel de Demandas</h1>
+        <div>
+            <a href="{{ add_url }}" class="btn btn-primary">+ Nova Demanda</a>
+            <a href="{% url 'admin:index' %}" class="btn btn-outline-secondary">Admin</a>
+        </div>
+    </div>
+
+    <h5 class="mb-2">Quadro Kanban</h5>
+    <div class="d-flex" style="gap:1rem; overflow-x:auto; padding-bottom:1rem;">
+        {% for situacao, tarefas in kanban_data.items %}
+        <div style="min-width:260px; background:#f5f5f5; padding:10px; border-radius:6px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <strong>{{ situacao.nome }}</strong>
+                <span class="badge bg-light text-dark">{{ tarefas|length }}</span>
+            </div>
+            {% for d in tarefas %}
+            <div style="background:white; padding:8px; border-radius:6px; margin-bottom:8px; border-left:6px solid {{ situacao.cor_hex }};">
+                <div style="font-weight:600">{{ d.titulo }}</div>
+                <div style="font-size:12px; color:#666">{{ d.nivel }} • {% if d.responsavel %}{{ d.responsavel.get_full_name|default:d.responsavel.username }}{% else %}---{% endif %}</div>
+                <div style="margin-top:6px; text-align:right"><a href="{% url 'admin:core_demanda_change' d.id %}" class="button">Abrir</a></div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <h5 class="mt-4 mb-2">Lista de Demandas</h5>
+    <div class="card">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Demanda</th>
+                        <th>Situação</th>
+                        <th>Responsável</th>
+                        <th>Prazo</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for demanda in demandas %}
+                    <tr>
+                        <td><strong>{{ demanda.titulo }}</strong><br><small>{{ demanda.nivel }}</small></td>
+                        <td>{% if demanda.situacao %}<span style="background:{{ demanda.situacao.cor_hex }}; color:white; padding:4px 8px; border-radius:6px">{{ demanda.situacao.nome }}</span>{% endif %}</td>
+                        <td>{% if demanda.responsavel %}{{ demanda.responsavel.get_full_name|default:demanda.responsavel.username }}{% else %}---{% endif %}</td>
+                        <td>{{ demanda.data_prazo|date:"d/m/Y"|default:"---" }}</td>
+                        <td><a href="{% url 'admin:core_demanda_change' demanda.id %}">Editar</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
