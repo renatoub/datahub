@@ -15,30 +15,24 @@ Sistema Django para gestão de demandas, atividades, pendências e Kanban, com d
 ## Instalação
 1. Clone o repositório:
    ```sh
-   git clone <repo-url>
+   git clone https://github.com/renatoub/datahub.git
    cd DataHub
    ```
-2. Crie e ative o ambiente virtual:
+2. Baixe o uv:
    ```sh
-   python -m venv .venv
-   .venv\Scripts\activate  # Windows
-   source .venv/bin/activate  # Linux/Mac
+   pip install uv
    ```
-3. Instale as dependências:
+3. Execute as migrações:
    ```sh
-   pip install -r requirements.txt
+   uv run python datahub/manage.py migrate
    ```
-4. Execute as migrações:
+4. Crie um superusuário:
    ```sh
-   python datahub/manage.py migrate
+   uv run python datahub/manage.py createsuperuser
    ```
-5. Crie um superusuário:
+5. Inicie o servidor:
    ```sh
-   python datahub/manage.py createsuperuser
-   ```
-6. Inicie o servidor:
-   ```sh
-   python datahub/manage.py runserver
+   uv run python datahub/manage.py runserver
    ```
 
 ## Uso

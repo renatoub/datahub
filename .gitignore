@@ -8,3 +8,10 @@ wheels/
 
 # Virtual environments
 .venv
+
+# DB local
+*.sqlite3
+
+# Local files
+anexos/
+pyrightconfig.json
