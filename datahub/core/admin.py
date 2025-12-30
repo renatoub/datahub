@@ -2,6 +2,7 @@ import os
 
 from django import forms
 from django.contrib import admin, messages
+from django.forms.widgets import FileInput
 from django.shortcuts import redirect, render
 from django.urls import path, reverse
 from django.utils import timezone
@@ -17,6 +18,54 @@ from .models import (
     Tema,
     TipoAtividade,
 )
+
+
+class MultipleFileInput(FileInput):
+    """
+    Widget que contorna a trava do Django para permitir múltiplos arquivos.
+    """
+
+    def render(self, name, value, attrs=None, renderer=None):
+        attrs = attrs or {}
+        attrs["multiple"] = "multiple"  # Injeta o atributo no HTML
+        return super().render(name, value, attrs, renderer)
+
+
+class AnexoForm(forms.ModelForm):
+    arquivo = forms.FileField(
+        widget=MultipleFileInput(), required=False, label="Adicionar arquivo(s)"
+    )
+
+    class Meta:
+        model = AnexoDemanda
+        fields = ["arquivo"]
+
+
+class AnexoDemandaInline(admin.TabularInline):
+    model = AnexoDemanda
+    form = AnexoForm
+    extra = 1
+    fields = ["arquivo", "link_download"]
+    readonly_fields = ["link_download"]
+
+    def link_download(self, obj):
+        if obj.id and obj.arquivo:
+            import os
+
+            nome = os.path.basename(obj.arquivo.name)
+            # Limita o nome a 20 caracteres para estética
+            nome_exibicao = (nome[:17] + "..") if len(nome) > 20 else nome
+            return format_html(
+                '<a href="{}" target="_blank" title="{}" style="'
+                "background-color: #17a2b8; color: white; padding: 4px 10px; "
+                "border-radius: 4px; text-decoration: none; font-size: 10px; "
+                'font-weight: bold; display: inline-block; min-width: 80px; text-align: center;">'
+                "📄 {}</a>",
+                obj.arquivo.url,
+                nome,  # Tooltip com nome completo
+                nome_exibicao,
+            )
+        return "-"
 
 
 class DemandaForm(forms.ModelForm):
@@ -47,18 +96,18 @@ class DemandaForm(forms.ModelForm):
         return cleaned
 
 
-class AnexoDemandaInline(admin.TabularInline):
-    model = AnexoDemanda
-    extra = 1
-    fields = ["arquivo", "link_download"]
-    readonly_fields = ["link_download"]
+# class AnexoDemandaInline(admin.TabularInline):
+#     model = AnexoDemanda
+#     extra = 1
+#     fields = ["arquivo", "link_download"]
+#     readonly_fields = ["link_download"]
 
-    def link_download(self, obj):
-        if obj.id and obj.arquivo:
-            return format_html(
-                '<a href="{}" target="_blank">📄 Baixar</a>', obj.arquivo.url
-            )
-        return "-"
+#     def link_download(self, obj):
+#         if obj.id and obj.arquivo:
+#             return format_html(
+#                 '<a href="{}" target="_blank">📄 Baixar</a>', obj.arquivo.url
+#             )
+#         return "-"
 
 
 class SubitemInline(admin.TabularInline):
@@ -91,7 +140,16 @@ class PendenciaInline(admin.TabularInline):
 @admin.register(AnexoDemanda)
 class AnexoDemandaAdmin(admin.ModelAdmin):
     list_display = ("id", "demanda_link", "nome_arquivo", "data_upload", "baixar")
-    search_fields = ("demanda__titulo", "arquivo")
+
+    def baixar(self, obj):
+        return format_html(
+            '<a class="button" href="{}" target="_blank" style="'
+            "background-color: #28a745; color: white; padding: 5px 15px; "
+            "border-radius: 20px; text-decoration: none; font-weight: bold; "
+            'box-shadow: 0 2px 4px rgba(0,0,0,0.1); border: none;">'
+            "📥 DOWNLOAD</a>",
+            obj.arquivo.url,
+        )
 
     def demanda_link(self, obj):
         return format_html(
@@ -102,12 +160,6 @@ class AnexoDemandaAdmin(admin.ModelAdmin):
 
     def nome_arquivo(self, obj):
         return os.path.basename(obj.arquivo.name)
-
-    def baixar(self, obj):
-        return format_html(
-            '<a class="button" href="{}" target="_blank" style="background:#17a2b8; color:white;">Download</a>',
-            obj.arquivo.url,
-        )
 
 
 @admin.register(Contato)
@@ -205,6 +257,47 @@ class DemandaAdmin(SimpleHistoryAdmin):
             Pendencia.objects.create(
                 demanda=obj, descricao=desc, criado_por=request.user
             )
+
+    def save_formset(self, request, form, formset, change):
+        if formset.model == AnexoDemanda:
+            instances = formset.save(commit=False)
+
+            for obj in formset.deleted_objects:
+                obj.delete()
+
+            for i, inline_form in enumerate(formset.forms):
+                if inline_form in formset.deleted_forms:
+                    continue
+
+                files = request.FILES.getlist(f"{formset.prefix}-{i}-arquivo")
+
+                if files:
+                    instance = inline_form.instance
+                    if not instance.demanda_id:
+                        instance.demanda = form.instance
+
+                    instance.arquivo = files[0]
+                    instance.save()
+                    if instance not in formset.new_objects:
+                        formset.new_objects.append(instance)
+
+                    for f in files[1:]:
+                        novo_anexo = AnexoDemanda.objects.create(
+                            demanda=form.instance, arquivo=f
+                        )
+                        formset.new_objects.append(novo_anexo)
+                else:
+                    if inline_form.instance.pk and inline_form.has_changed():
+                        inline_form.save()
+        else:
+            super().save_formset(request, form, formset, change)
+
+    class Media:
+        css = {
+            "all": (
+                "css/custom_admin.css",
+            )  # Se você tiver arquivos estáticos configurados
+        }
 
 
 @admin.register(Tema, TipoAtividade)
