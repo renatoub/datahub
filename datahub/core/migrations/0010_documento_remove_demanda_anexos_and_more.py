@@ -8,37 +8,60 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0009_demanda_anexos_historicaldemanda_anexos'),
+        ("core", "0009_demanda_anexos_historicaldemanda_anexos"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Documento',
+            name="Documento",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('titulo', models.CharField(max_length=200)),
-                ('data_criacao', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("titulo", models.CharField(max_length=200)),
+                ("data_criacao", models.DateTimeField(auto_now_add=True)),
             ],
         ),
         migrations.RemoveField(
-            model_name='demanda',
-            name='anexos',
+            model_name="demanda",
+            name="anexos",
         ),
         migrations.RemoveField(
-            model_name='historicaldemanda',
-            name='anexos',
+            model_name="historicaldemanda",
+            name="anexos",
         ),
         migrations.CreateModel(
-            name='AnexoDemanda',
+            name="AnexoDemanda",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('arquivo', models.FileField(upload_to=core.models.upload_anexo_path)),
-                ('data_upload', models.DateTimeField(auto_now_add=True)),
-                ('demanda', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='anexos_set', to='core.demanda')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("arquivo", models.FileField(upload_to=core.models.upload_anexo_path)),
+                ("data_upload", models.DateTimeField(auto_now_add=True)),
+                (
+                    "demanda",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="anexos_set",
+                        to="core.demanda",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Anexo de Demanda',
-                'verbose_name_plural': 'Todos os Anexos',
+                "verbose_name": "Anexo de Demanda",
+                "verbose_name_plural": "Todos os Anexos",
             },
         ),
     ]

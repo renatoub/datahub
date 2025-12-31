@@ -6,31 +6,41 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0001_initial'),
+        ("core", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Contato',
+            name="Contato",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('nome', models.CharField(max_length=150)),
-                ('email', models.EmailField(blank=True, max_length=254)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("nome", models.CharField(max_length=150)),
+                ("email", models.EmailField(blank=True, max_length=254)),
             ],
         ),
         migrations.AddField(
-            model_name='demanda',
-            name='descricao',
+            model_name="demanda",
+            name="descricao",
             field=models.TextField(blank=True),
         ),
         migrations.AddField(
-            model_name='demanda',
-            name='observacao',
+            model_name="demanda",
+            name="observacao",
             field=models.TextField(blank=True),
         ),
         migrations.AddField(
-            model_name='demanda',
-            name='solicitantes',
-            field=models.ManyToManyField(blank=True, related_name='demandas', to='core.contato'),
+            model_name="demanda",
+            name="solicitantes",
+            field=models.ManyToManyField(
+                blank=True, related_name="demandas", to="core.contato"
+            ),
         ),
     ]

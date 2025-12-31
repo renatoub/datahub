@@ -7,6 +7,7 @@ from django.shortcuts import redirect, render
 from django.urls import path, reverse
 from django.utils import timezone
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from simple_history.admin import SimpleHistoryAdmin
 
 from .models import (
@@ -27,7 +28,7 @@ class MultipleFileInput(FileInput):
 
     def render(self, name, value, attrs=None, renderer=None):
         attrs = attrs or {}
-        attrs["multiple"] = "multiple"  # Injeta o atributo no HTML
+        attrs["multiple"] = "multiple"
         return super().render(name, value, attrs, renderer)
 
 
@@ -53,7 +54,6 @@ class AnexoDemandaInline(admin.TabularInline):
             import os
 
             nome = os.path.basename(obj.arquivo.name)
-            # Limita o nome a 20 caracteres para estética
             nome_exibicao = (nome[:17] + "..") if len(nome) > 20 else nome
             return format_html(
                 '<a href="{}" target="_blank" title="{}" style="'
@@ -62,7 +62,7 @@ class AnexoDemandaInline(admin.TabularInline):
                 'font-weight: bold; display: inline-block; min-width: 80px; text-align: center;">'
                 "📄 {}</a>",
                 obj.arquivo.url,
-                nome,  # Tooltip com nome completo
+                nome,
                 nome_exibicao,
             )
         return "-"
@@ -96,24 +96,10 @@ class DemandaForm(forms.ModelForm):
         return cleaned
 
 
-# class AnexoDemandaInline(admin.TabularInline):
-#     model = AnexoDemanda
-#     extra = 1
-#     fields = ["arquivo", "link_download"]
-#     readonly_fields = ["link_download"]
-
-#     def link_download(self, obj):
-#         if obj.id and obj.arquivo:
-#             return format_html(
-#                 '<a href="{}" target="_blank">📄 Baixar</a>', obj.arquivo.url
-#             )
-#         return "-"
-
-
 class SubitemInline(admin.TabularInline):
     model = Demanda
     extra = 0
-    fields = ["nivel", "titulo", "situacao", "responsavel", "data_prazo"]
+    fields = ["tema", "titulo", "situacao", "responsavel", "data_prazo"]
     show_change_link = True
 
 
@@ -174,13 +160,13 @@ class DemandaAdmin(SimpleHistoryAdmin):
     inlines = [SubitemInline, PendenciaInline, AnexoDemandaInline]
     list_display = (
         "titulo",
-        "nivel",
+        "tema",
         "status_tag",
         "status_prazo_tag",
         "responsavel",
         "acoes_rapidas",
     )
-    list_filter = ("nivel", "situacao", "responsavel", "tema")
+    list_filter = ("tema", "situacao", "responsavel", "tema")
     search_fields = ("titulo", "descricao")
     autocomplete_fields = ["parent", "responsavel", "solicitantes"]
     readonly_fields = ["data_fechamento"]
@@ -189,7 +175,7 @@ class DemandaAdmin(SimpleHistoryAdmin):
     fieldsets = (
         (
             "Principal",
-            {"fields": ("titulo", "nivel", "parent", "tema", "tipo", "situacao")},
+            {"fields": ("titulo", "parent", "tema", "tipo", "situacao")},
         ),
         ("Pessoas", {"fields": ("responsavel", "solicitantes")}),
         ("Detalhes", {"fields": ("descricao", "observacao")}),
@@ -205,23 +191,101 @@ class DemandaAdmin(SimpleHistoryAdmin):
             obj.situacao.nome,
         )
 
+    status_tag.admin_order_field = "situacao__nome"
+    status_tag.short_description = "Bucket"
+
     def status_prazo_tag(self, obj):
         if not obj.data_prazo:
             return "-"
-        atrasado = obj.data_prazo < timezone.now().date()
-        cor = "#e74c3c" if atrasado else "#27ae60"
-        txt = "Fora do Prazo" if atrasado else "No Prazo"
+        atrasado = (
+            obj.data_prazo < timezone.now().date()
+            if obj.data_fechamento is None
+            else obj.data_prazo < obj.data_fechamento.date()
+        )
+        cor = (
+            "#e74c3c"
+            if atrasado
+            else "#27ae60" if obj.data_fechamento is None else "#2980b9"
+        )
+        txt = (
+            "Fora do Prazo"
+            if atrasado and obj.data_fechamento is None
+            else (
+                "No Prazo"
+                if obj.data_fechamento is None
+                else (
+                    "Finalizado no Prazo"
+                    if not atrasado
+                    else "Finalizado Fora do Prazo"
+                )
+            )
+        )
         return format_html('<strong style="color: {};">{}</strong>', cor, txt)
 
+    status_prazo_tag.admin_order_field = "data_prazo"
+    status_prazo_tag.short_description = "Status do Prazo"
+
+    def changelist_view(self, request, extra_context=None):
+        # Guardamos o request atual para usar no método acoes_rapidas
+        self._current_request = request
+        return super().changelist_view(request, extra_context)
+
     def acoes_rapidas(self, obj):
-        sub_url = reverse("criar_subatividade", args=[obj.pk])
-        assumir_url = reverse("admin:core_demanda_assumir", args=[obj.pk])
-        return format_html(
-            '<a href="{}" style="background:#17a2b8; color:white; padding:2px 5px; border-radius:3px; font-size:10px; text-decoration:none;">+ Sub</a> '
-            '<a href="{}" style="background:#28a745; color:white; padding:2px 5px; border-radius:3px; font-size:10px; text-decoration:none;">Assumir</a>',
-            sub_url,
-            assumir_url,
+        # Recuperamos o ID do usuário diretamente do request que salvamos
+        usuario_logado = self._current_request.user if self._current_request else None
+        id_do_usuario = usuario_logado.id if usuario_logado else None
+
+        html = []
+
+        # Botão + Sub
+        html.append(
+            format_html(
+                '<a class="btn" href="{}" style="background:#17a2b8; color:white; padding:2px 5px; font-size:10px; margin-right:3px; border-radius:3px; text-decoration:none;">+ Sub</a>',
+                reverse("criar_subatividade", args=[obj.pk]),
+            )
         )
+
+        # Botão Assumir (Aparece apenas se o logado NÃO for o responsável)
+        if obj.responsavel_id != id_do_usuario:
+            assumir_url = reverse(
+                f"admin:{obj._meta.app_label}_{obj._meta.model_name}_assumir",
+                args=[obj.pk],
+            )
+            html.append(
+                format_html(
+                    '<a class="btn" href="{}" style="background:#28a745; color:white; padding:2px 5px; font-size:10px; margin-right:3px; border-radius:3px; text-decoration:none;">Assumir</a>',
+                    assumir_url,
+                )
+            )
+
+        # Status seguintes
+        if obj.situacao:
+            for proxima in obj.situacao.proximas_situacoes.all():
+                url = reverse("alterar_status", args=[obj.pk, proxima.id])
+
+                if "pend" in proxima.nome.lower():
+                    html.append(
+                        format_html(
+                            '<a href="{}" '
+                            "onclick=\"window.open(this.href, 'popup', 'width=600,height=500,scrollbars=yes,resizable=yes'); return false;\" "
+                            'style="font-size:10px; padding:1px 4px; border:1px solid #ffc107; color:#856404; background:#fff3cd; text-decoration:none; margin-right:2px;">'
+                            "{}</a>",
+                            url,
+                            proxima.nome,
+                        )
+                    )
+                else:
+                    html.append(
+                        format_html(
+                            '<a href="{}" style="font-size:10px; padding:1px 4px; border:1px solid #ccc; color:#666; text-decoration:none; margin-right:2px;">'
+                            "{}</a>",
+                            url,
+                            proxima.nome,
+                        )
+                    )
+        return mark_safe("".join(html))
+
+    acoes_rapidas.short_description = "Ações"
 
     def get_urls(self):
         return [
@@ -293,11 +357,7 @@ class DemandaAdmin(SimpleHistoryAdmin):
             super().save_formset(request, form, formset, change)
 
     class Media:
-        css = {
-            "all": (
-                "css/custom_admin.css",
-            )  # Se você tiver arquivos estáticos configurados
-        }
+        css = {"all": ("css/custom_admin.css",)}
 
 
 @admin.register(Tema, TipoAtividade)

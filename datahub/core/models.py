@@ -40,7 +40,8 @@ class Situacao(models.Model):
     proximas_situacoes = models.ManyToManyField("self", symmetrical=False, blank=True)
 
     class Meta:
-        verbose_name_plural = "Situações"
+        verbose_name = "Bucket"
+        verbose_name_plural = "Buckets"
 
     def __str__(self):
         return self.nome
@@ -55,12 +56,6 @@ class Contato(models.Model):
 
 
 class Demanda(models.Model):
-    NIVEL_CHOICES = [
-        ("Projeto", "Projeto"),
-        ("Atividade", "Atividade"),
-        ("Sub-item", "Sub-item"),
-    ]
-    nivel = models.CharField(max_length=20, choices=NIVEL_CHOICES, default="Atividade")
     parent = models.ForeignKey(
         "self",
         on_delete=models.SET_NULL,
@@ -98,13 +93,11 @@ class Demanda(models.Model):
     data_prazo = models.DateField(null=True, blank=True)
     data_fechamento = models.DateTimeField(null=True, blank=True)
     criado_em = models.DateTimeField(auto_now_add=True)
-    atualizado_em = models.DateTimeField(
-        auto_now=timezone.now
-    )  # Corrigido para evitar erro de migração
+    atualizado_em = models.DateTimeField(auto_now=True)
     history = HistoricalRecords()
 
     def __str__(self):
-        return f"{self.nivel}: {self.titulo}"
+        return f"{self.tema}: {self.titulo}"
 
 
 def upload_anexo_path(instance, filename):
@@ -137,6 +130,13 @@ class Pendencia(models.Model):
     )
     criado_em = models.DateTimeField(auto_now_add=True)
     resolvido_em = models.DateTimeField(null=True, blank=True)
+    resolvido_por = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="pendencias_resolvidas",
+    )
 
     def __str__(self):
         return f"Pendência em {self.demanda.titulo}"

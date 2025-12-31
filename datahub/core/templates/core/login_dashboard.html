@@ -1,9 +1,36 @@
-<div style="max-width: 300px; margin: 100px auto; text-align: center; font-family: sans-serif;">
-    <h3>Acesso Restrito</h3>
-    <form method="post">
+<div style="max-width: 350px; margin: 80px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; font-family: system-ui, -apple-system, sans-serif; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <h3 style="margin-top: 0; color: #333; text-align: center;">Acesso Restrito</h3>
+    
+    <form method="post" style="display: flex; flex-direction: column; gap: 12px;">
         {% csrf_token %}
-        <input type="password" name="password" placeholder="Senha" required style="padding: 10px; width: 100%; margin-bottom: 10px;">
-        <button type="submit" style="padding: 10px 20px; cursor: pointer;">Entrar</button>
+        <input 
+            type="password" 
+            name="password" 
+            placeholder="Digite a senha" 
+            required 
+            style="padding: 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px;"
+        >
+        <button 
+            type="submit" 
+            style="padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 16px;"
+        >
+            Entrar
+        </button>
     </form>
-    {% if error %}<p style="color: red;">{{ error }}</p>{% endif %}
+
+    {% if error %}
+    <p style="color: #d9534f; font-size: 14px; margin-top: 15px; text-align: center; background: #fdf7f7; padding: 8px; border-radius: 4px;">
+        {{ error }}
+    </p>
+    {% endif %}
+
+    <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+
+    <div style="text-align: center; font-size: 14px; color: #666;">
+        Não tem acesso? <br>
+        <a href="mailto:Renato Ubaldo Moreira e Moraes <renato.m.moraes@eqtlcontratada.com.br>?subject=Solicitação de Acesso - Sistema" 
+           style="color: #007bff; text-decoration: none; font-weight: 500;">
+           Solicitar acesso por e-mail
+        </a>
+    </div>
 </div>

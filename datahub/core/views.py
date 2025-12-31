@@ -72,7 +72,7 @@ def dashboard_view(request):
     sit_data = Demanda.objects.values("situacao__nome", "situacao__cor_hex").annotate(
         total=Count("id")
     )
-    nivel_data = Demanda.objects.values("nivel").annotate(total=Count("id"))
+    tema_data = Demanda.objects.values("tema").annotate(total=Count("id"))
 
     context = {
         "kanban_data": kanban_data,
@@ -83,8 +83,8 @@ def dashboard_view(request):
         ],
         "counts_situacao": [item["total"] for item in sit_data],
         "cores_situacao": [item["situacao__cor_hex"] or "#bdc3c7" for item in sit_data],
-        "labels_nivel": [item["nivel"] for item in nivel_data],
-        "counts_nivel": [item["total"] for item in nivel_data],
+        "labels_tema": [item["tema"] for item in tema_data],
+        "counts_tema": [item["total"] for item in tema_data],
     }
     return render(request, "core/dashboard.html", context)
 
@@ -92,21 +92,32 @@ def dashboard_view(request):
 def alterar_status_view(request, pk, situacao_id):
     d = get_object_or_404(Demanda, pk=pk)
     target = get_object_or_404(Situacao, pk=situacao_id)
-    nome = (target.nome or "").lower()
 
-    if request.method == "GET" and "pend" in nome:
+    if target.pendente:
+        if request.method == "POST":
+            desc = request.POST.get("pendencia_descricao", "").strip()
+            d.situacao = target
+            d.save()
+            if desc:
+                Pendencia.objects.create(
+                    demanda=d, descricao=desc, criado_por=request.user, resolvida=False
+                )
+
+            return render(request, "core/pendencia_form.html", {"msg_sucesso": True})
+
         return render(
             request,
             "core/pendencia_form.html",
             {"demanda": d, "target": target, "action_url": request.path},
         )
 
-    if request.method == "POST":
-        desc = request.POST.get("pendencia_descricao", "").strip()
-        d.situacao = target
-        d.save()
-        if desc:
-            Pendencia.objects.create(demanda=d, descricao=desc, criado_por=request.user)
+    d.situacao = target
+    d.save()
+
+    Pendencia.objects.filter(demanda=d, resolvida=False).update(
+        resolvida=True, resolvido_em=timezone.now(), resolvido_por=request.user
+    )
+
     return redirect(request.META.get("HTTP_REFERER", "dashboard"))
 
 

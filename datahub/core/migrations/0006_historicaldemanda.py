@@ -9,39 +9,124 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0005_historicalpendencia'),
+        ("core", "0005_historicalpendencia"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='HistoricalDemanda',
+            name="HistoricalDemanda",
             fields=[
-                ('id', models.BigIntegerField(auto_created=True, blank=True, db_index=True, verbose_name='ID')),
-                ('nivel', models.CharField(choices=[('INICIATIVA', 'Iniciativa'), ('EPICO', 'Épico'), ('HISTORIA', 'História'), ('ATIVIDADE', 'Atividade')], default='ATIVIDADE', max_length=20)),
-                ('titulo', models.CharField(max_length=255, verbose_name='Atividade / Título')),
-                ('data_inicio', models.DateField(blank=True, null=True)),
-                ('data_prazo', models.DateField(blank=True, null=True)),
-                ('data_fechamento', models.DateField(blank=True, null=True)),
-                ('descricao', models.TextField(blank=True)),
-                ('observacao', models.TextField(blank=True)),
-                ('criado_em', models.DateTimeField(blank=True, editable=False)),
-                ('history_id', models.AutoField(primary_key=True, serialize=False)),
-                ('history_date', models.DateTimeField(db_index=True)),
-                ('history_change_reason', models.CharField(max_length=100, null=True)),
-                ('history_type', models.CharField(choices=[('+', 'Created'), ('~', 'Changed'), ('-', 'Deleted')], max_length=1)),
-                ('history_user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
-                ('parent', models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='core.demanda', verbose_name='Item Pai (Iniciativa/Épico/História)')),
-                ('responsavel', models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to=settings.AUTH_USER_MODEL)),
-                ('situacao', models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='core.situacao')),
-                ('tema', models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='core.tema')),
-                ('tipo', models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='core.tipoatividade')),
+                (
+                    "id",
+                    models.BigIntegerField(
+                        auto_created=True, blank=True, db_index=True, verbose_name="ID"
+                    ),
+                ),
+                (
+                    "nivel",
+                    models.CharField(
+                        choices=[
+                            ("INICIATIVA", "Iniciativa"),
+                            ("EPICO", "Épico"),
+                            ("HISTORIA", "História"),
+                            ("ATIVIDADE", "Atividade"),
+                        ],
+                        default="ATIVIDADE",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "titulo",
+                    models.CharField(max_length=255, verbose_name="Atividade / Título"),
+                ),
+                ("data_inicio", models.DateField(blank=True, null=True)),
+                ("data_prazo", models.DateField(blank=True, null=True)),
+                ("data_fechamento", models.DateField(blank=True, null=True)),
+                ("descricao", models.TextField(blank=True)),
+                ("observacao", models.TextField(blank=True)),
+                ("criado_em", models.DateTimeField(blank=True, editable=False)),
+                ("history_id", models.AutoField(primary_key=True, serialize=False)),
+                ("history_date", models.DateTimeField(db_index=True)),
+                ("history_change_reason", models.CharField(max_length=100, null=True)),
+                (
+                    "history_type",
+                    models.CharField(
+                        choices=[("+", "Created"), ("~", "Changed"), ("-", "Deleted")],
+                        max_length=1,
+                    ),
+                ),
+                (
+                    "history_user",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "parent",
+                    models.ForeignKey(
+                        blank=True,
+                        db_constraint=False,
+                        null=True,
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        related_name="+",
+                        to="core.demanda",
+                        verbose_name="Item Pai (Iniciativa/Épico/História)",
+                    ),
+                ),
+                (
+                    "responsavel",
+                    models.ForeignKey(
+                        blank=True,
+                        db_constraint=False,
+                        null=True,
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        related_name="+",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "situacao",
+                    models.ForeignKey(
+                        blank=True,
+                        db_constraint=False,
+                        null=True,
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        related_name="+",
+                        to="core.situacao",
+                    ),
+                ),
+                (
+                    "tema",
+                    models.ForeignKey(
+                        blank=True,
+                        db_constraint=False,
+                        null=True,
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        related_name="+",
+                        to="core.tema",
+                    ),
+                ),
+                (
+                    "tipo",
+                    models.ForeignKey(
+                        blank=True,
+                        db_constraint=False,
+                        null=True,
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        related_name="+",
+                        to="core.tipoatividade",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'historical demanda',
-                'verbose_name_plural': 'historical demandas',
-                'ordering': ('-history_date', '-history_id'),
-                'get_latest_by': ('history_date', 'history_id'),
+                "verbose_name": "historical demanda",
+                "verbose_name_plural": "historical demandas",
+                "ordering": ("-history_date", "-history_id"),
+                "get_latest_by": ("history_date", "history_id"),
             },
             bases=(simple_history.models.HistoricalChanges, models.Model),
         ),

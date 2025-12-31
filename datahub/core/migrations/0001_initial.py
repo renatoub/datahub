@@ -15,45 +15,139 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Tema',
+            name="Tema",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('nome', models.CharField(max_length=100)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("nome", models.CharField(max_length=100)),
             ],
         ),
         migrations.CreateModel(
-            name='TipoAtividade',
+            name="TipoAtividade",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('nome', models.CharField(max_length=100)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("nome", models.CharField(max_length=100)),
             ],
         ),
         migrations.CreateModel(
-            name='Situacao',
+            name="Situacao",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('nome', models.CharField(max_length=100)),
-                ('cor_hex', models.CharField(default='#6c757d', help_text='Insira a cor em Hexadecimal (ex: #d9534f)', max_length=7)),
-                ('proximas_situacoes', models.ManyToManyField(blank=True, to='core.situacao')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("nome", models.CharField(max_length=100)),
+                (
+                    "cor_hex",
+                    models.CharField(
+                        default="#6c757d",
+                        help_text="Insira a cor em Hexadecimal (ex: #d9534f)",
+                        max_length=7,
+                    ),
+                ),
+                (
+                    "proximas_situacoes",
+                    models.ManyToManyField(blank=True, to="core.situacao"),
+                ),
             ],
             options={
-                'verbose_name_plural': 'Situações',
+                "verbose_name_plural": "Situações",
             },
         ),
         migrations.CreateModel(
-            name='Demanda',
+            name="Demanda",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('nivel', models.CharField(choices=[('INICIATIVA', 'Iniciativa'), ('EPICO', 'Épico'), ('HISTORIA', 'História'), ('ATIVIDADE', 'Atividade')], default='ATIVIDADE', max_length=20)),
-                ('titulo', models.CharField(max_length=255, verbose_name='Atividade / Título')),
-                ('data_inicio', models.DateField(blank=True, null=True)),
-                ('data_prazo', models.DateField(blank=True, null=True)),
-                ('criado_em', models.DateTimeField(auto_now_add=True)),
-                ('parent', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='subitens', to='core.demanda', verbose_name='Item Pai (Iniciativa/Épico/História)')),
-                ('responsavel', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
-                ('situacao', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to='core.situacao')),
-                ('tema', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='core.tema')),
-                ('tipo', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='core.tipoatividade')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "nivel",
+                    models.CharField(
+                        choices=[
+                            ("INICIATIVA", "Iniciativa"),
+                            ("EPICO", "Épico"),
+                            ("HISTORIA", "História"),
+                            ("ATIVIDADE", "Atividade"),
+                        ],
+                        default="ATIVIDADE",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "titulo",
+                    models.CharField(max_length=255, verbose_name="Atividade / Título"),
+                ),
+                ("data_inicio", models.DateField(blank=True, null=True)),
+                ("data_prazo", models.DateField(blank=True, null=True)),
+                ("criado_em", models.DateTimeField(auto_now_add=True)),
+                (
+                    "parent",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="subitens",
+                        to="core.demanda",
+                        verbose_name="Item Pai (Iniciativa/Épico/História)",
+                    ),
+                ),
+                (
+                    "responsavel",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "situacao",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to="core.situacao",
+                    ),
+                ),
+                (
+                    "tema",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, to="core.tema"
+                    ),
+                ),
+                (
+                    "tipo",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to="core.tipoatividade",
+                    ),
+                ),
             ],
         ),
     ]

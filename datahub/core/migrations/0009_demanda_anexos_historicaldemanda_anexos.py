@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0008_situacao_pendente'),
+        ("core", "0008_situacao_pendente"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='demanda',
-            name='anexos',
-            field=models.FileField(blank=True, null=True, upload_to='anexos'),
+            model_name="demanda",
+            name="anexos",
+            field=models.FileField(blank=True, null=True, upload_to="anexos"),
         ),
         migrations.AddField(
-            model_name='historicaldemanda',
-            name='anexos',
+            model_name="historicaldemanda",
+            name="anexos",
             field=models.TextField(blank=True, max_length=100, null=True),
         ),
     ]

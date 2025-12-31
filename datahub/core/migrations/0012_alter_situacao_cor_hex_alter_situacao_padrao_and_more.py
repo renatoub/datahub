@@ -6,23 +6,33 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0011_delete_documento_alter_anexodemanda_options_and_more'),
+        ("core", "0011_delete_documento_alter_anexodemanda_options_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='situacao',
-            name='cor_hex',
-            field=models.CharField(default='#6c757d', help_text='Insira a cor em Hexadecimal (ex: #d9534f)', max_length=7),
+            model_name="situacao",
+            name="cor_hex",
+            field=models.CharField(
+                default="#6c757d",
+                help_text="Insira a cor em Hexadecimal (ex: #d9534f)",
+                max_length=7,
+            ),
         ),
         migrations.AlterField(
-            model_name='situacao',
-            name='padrao',
-            field=models.BooleanField(default=False, help_text='Marcar como situação padrão para novas demandas'),
+            model_name="situacao",
+            name="padrao",
+            field=models.BooleanField(
+                default=False,
+                help_text="Marcar como situação padrão para novas demandas",
+            ),
         ),
         migrations.AlterField(
-            model_name='situacao',
-            name='pendente',
-            field=models.BooleanField(default=False, help_text="Marcar como situação que representa 'pendente'"),
+            model_name="situacao",
+            name="pendente",
+            field=models.BooleanField(
+                default=False,
+                help_text="Marcar como situação que representa 'pendente'",
+            ),
         ),
     ]

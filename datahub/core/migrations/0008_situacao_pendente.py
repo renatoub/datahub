@@ -6,13 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0007_situacao_padrao'),
+        ("core", "0007_situacao_padrao"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='situacao',
-            name='pendente',
-            field=models.BooleanField(default=False, help_text="Marcar como situação que representa 'pendente'"),
+            model_name="situacao",
+            name="pendente",
+            field=models.BooleanField(
+                default=False,
+                help_text="Marcar como situação que representa 'pendente'",
+            ),
         ),
     ]
